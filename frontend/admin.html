@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Service Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+        .admin-header {
+            background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 2rem; position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .admin-header h1 { color: #6366f1; }
+        .admin-header .btn-logout { padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .dashboard { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .dashboard h1 { margin-bottom: 1.5rem; color: #6366f1; }
+        .orders-list { display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
+        .order-item {
+            background: #ffffff; border-radius: 8px; padding: 1.25rem;
+            border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;
+        }
+        .order-item .order-info { flex: 1; }
+        .order-item .order-info .title { font-weight: 600; margin-bottom: 0.25rem; }
+        .order-item .order-info .meta { font-size: 0.9rem; color: #6b7280; }
+        .order-item .order-status {
+            padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; text-transform: capitalize;
+        }
+        .order-item .order-status.pending { background: #fef3c7; color: #92400e; }
+        .order-item .order-status.completed { background: #d1fae5; color: #065f46; }
+        .order-item .order-status.cancelled { background: #fee2e2; color: #991b1b; }
+        .update-form {
+            display: flex; gap: 0.5rem; margin-top: 0.5rem;
+        }
+        .update-form select { padding: 0.4rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; }
+        .update-form button { padding: 0.4rem 0.75rem; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: white;
+            padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        @media (max-width: 768px) { .admin-header { flex-direction: column; gap: 1rem; } }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>Admin Panel</h1>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+    <div class="dashboard">
+        <h1>All Orders</h1>
+        <div class="orders-list" id="orders-list"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        let currentUser = null;
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(r => r.json())
+                .then(user => {
+                    currentUser = user;
+                    document.querySelector('.admin-header').innerHTML = `
+                        <div><h1>Admin Panel</h1><p style="color:#6b7280;">Welcome, ${user.name}</p></div>
+                        <button class="btn-logout" onclick="logout()">Logout</button>
+                    `;
+                });
+        }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/orders/all', { headers: { 'Authorization': 'Bearer ' + token } });
+                const orders = await res.json();
+                const list = document.getElementById('orders-list');
+                if (orders.length === 0) { list.innerHTML = '<p>No orders yet.</p>'; return; }
+                list.innerHTML = orders.map(o => `
+                    <div class="order-item">
+                        <div class="order-info">
+                            <div class="title">${o.service_title} - ${o.user_name}</div>
+                            <div class="meta">${o.amount} USD • ${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="update-form">
+                            <select onchange="updateStatus(${o.id}, this.value)">
+                                <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) { showToast('Failed to load orders'); }
+        }
+        window.updateStatus = async function(id, status) {
+            try {
+                const res = await fetch(`/api/orders/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ status })
+                });
+                if (res.ok) {
+                    showToast('Order status updated');
+                    loadOrders();
+                }
+            } catch (e) { showToast('Failed to update order'); }
+        }
+        window.logout = function() { localStorage.removeItem('token'); window.location.href = 'index.html'; }
+        loadOrders();
+    </script>
+</body>
+</html>

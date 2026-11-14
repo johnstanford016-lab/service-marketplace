@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Service Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar .logo { font-size: 1.5rem; font-weight: 700; color: #6366f1; }
+        .navbar .nav-links { display: flex; gap: 1.5rem; }
+        .navbar .nav-links a { text-decoration: none; color: #1f2937; font-weight: 500; }
+        .navbar .nav-links a:hover { color: #6366f1; }
+        .navbar .nav-actions { display: flex; gap: 1rem; }
+        .navbar .nav-actions a {
+            padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 6px;
+            text-decoration: none; color: #1f2937; cursor: pointer;
+        }
+        .navbar .nav-actions .btn-logout { background: #ef4444; color: white; border-color: #ef4444; }
+        .dashboard { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .dashboard h1 { margin-bottom: 1.5rem; color: #6366f1; }
+        .orders-list { display: flex; flex-direction: column; gap: 1rem; max-width: 800px; }
+        .order-item {
+            background: #ffffff; border-radius: 8px; padding: 1.25rem;
+            border: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;
+        }
+        .order-item .order-info { flex: 1; }
+        .order-item .order-info .title { font-weight: 600; margin-bottom: 0.25rem; }
+        .order-item .order-info .meta { font-size: 0.9rem; color: #6b7280; }
+        .order-item .order-status {
+            padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+        }
+        .order-item .order-status.pending { background: #fef3c7; color: #92400e; }
+        .order-item .order-status.completed { background: #d1fae5; color: #065f46; }
+        .order-item .order-status.cancelled { background: #fee2e2; color: #991b1b; }
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #ffffff; border-radius: 12px; padding: 2rem;
+            max-width: 450px; width: 90%; max-height: 90vh; overflow-y: auto;
+        }
+        .modal h2 { margin-bottom: 1.5rem; color: #6366f1; }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .modal input {
+            width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px;
+        }
+        .modal .close { float: right; cursor: pointer; color: #6b7280; font-size: 1.5rem; }
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: white;
+            padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 2000; transform: translateY(100px); opacity: 0; transition: all 0.3s;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .loading {
+            display: inline-block; width: 20px; height: 20px; border: 3px solid #e5e7eb;
+            border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .navbar .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">ServiceHub</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+        </div>
+        <div class="nav-actions">
+            <a href="login.html" id="login-link">Login</a>
+            <a href="register.html" id="register-link">Register</a>
+            <a href="#" id="logout-btn" style="display:none;">Logout</a>
+        </div>
+    </nav>
+    <div class="dashboard" id="dashboard" style="display:none;">
+        <h1>My Orders</h1>
+        <div class="orders-list" id="orders-list"></div>
+    </div>
+    <div class="modal-overlay" id="purchase-modal">
+        <div class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Complete Purchase</h2>
+            <form id="purchase-form">
+                <div class="form-group"><label>Service</label><input type="text" id="purchase-service" readonly></div>
+                <div class="form-group"><label>Price</label><input type="number" id="purchase-price" readonly></div>
+                <div class="form-group"><label>Card Number</label><input type="text" id="card-number" placeholder="4242 4242 4242 4242"></div>
+                <div class="form-group"><label>Expiry (MM/YY)</label><input type="text" id="card-expiry" placeholder="12/26"></div>
+                <div class="form-group"><label>CVC</label><input type="text" id="card-cvc" placeholder="123"></div>
+                <button type="submit" class="btn-submit">Pay Now</button>
+            </form>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        let currentUser = null;
+        let currentServiceId = null;
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch(`${API_BASE_URL}/me`, { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(r => r.json())
+                .then(user => {
+                    currentUser = user;
+                    document.getElementById('login-link').style.display = 'none';
+                    document.getElementById('register-link').style.display = 'none';
+                    document.getElementById('logout-btn').style.display = 'inline';
+                });
+        }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        async function loadOrders() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/orders`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const orders = await res.json();
+                const list = document.getElementById('orders-list');
+                if (orders.length === 0) { list.innerHTML = '<p>No orders yet.</p>'; return; }
+                list.innerHTML = orders.map(o => `
+                    <div class="order-item">
+                        <div class="order-info">
+                            <div class="title">${o.service_title}</div>
+                            <div class="meta">Purchased: ${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="order-status ${o.status}">${o.status}</div>
+                    </div>
+                `).join('');
+            } catch (e) { showToast('Failed to load orders'); }
+        }
+        document.getElementById('purchase-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+            if (!cardNumber.startsWith('4242')) { showToast('Please use a test card (4242...)'); return; }
+            try {
+                showToast('Processing payment...');
+                const res = await fetch(`${API_BASE_URL}/payments/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ service_id: currentServiceId, amount: document.getElementById('purchase-price').value })
+                });
+                const data = await res.json();
+                if (data.clientSecret) {
+                    closeModal();
+                    showToast('Payment successful! Thank you.');
+                    loadOrders(); loadServices();
+                }
+            } catch (e) { showToast('Payment error'); }
+        });
+        window.showPurchaseModal = function(id) {
+            currentServiceId = id;
+            fetch(`${API_BASE_URL}/services/${id}`).then(r => r.json()).then(s => {
+                document.getElementById('purchase-service').value = s.title;
+                document.getElementById('purchase-price').value = s.price;
+                document.getElementById('purchase-modal').classList.add('active');
+            });
+        }
+        window.closeModal = function() { document.getElementById('purchase-modal').classList.remove('active'); }
+        window.logout = function() { localStorage.removeItem('token'); window.location.href = 'index.html'; }
+        const url = window.location.pathname.split('/').pop();
+        if (url === 'dashboard.html') {
+            document.getElementById('dashboard').style.display = 'block';
+            loadOrders();
+        }
+    </script>
+</body>
+</html>

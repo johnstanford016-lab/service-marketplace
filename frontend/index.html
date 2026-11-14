@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Marketplace</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .navbar .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .navbar .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .navbar .nav-links a:hover { color: var(--primary); }
+        .navbar .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .navbar .nav-actions a {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .navbar .nav-actions a:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .navbar .nav-actions .btn-primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .navbar .nav-actions .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .service-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .service-card .price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        .service-card .btn-purchase {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .service-card .btn-purchase:hover {
+            background: #059669;
+        }
+
+        /* Auth Pages */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg);
+        }
+        .auth-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 400px;
+        }
+        .auth-card h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        .auth-card .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .auth-card label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .auth-card input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .auth-card input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        .auth-card .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .auth-card .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+        .auth-card .auth-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .auth-card .auth-link a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .dashboard h1 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 800px;
+        }
+        .order-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-item .order-info { flex: 1; }
+        .order-item .order-info .title { font-weight: 600; margin-bottom: 0.25rem; }
+        .order-item .order-info .meta { font-size: 0.9rem; color: var(--text-light); }
+        .order-item .order-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .order-item .order-status.pending { background: #fef3c7; color: #92400e; }
+        .order-item .order-status.completed { background: #d1fae5; color: #065f46; }
+        .order-item .order-status.cancelled { background: #fee2e2; color: #991b1b; }
+        .order-item .btn-view {
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .order-item .btn-view:hover { background: var(--primary-dark); }
+
+        /* Admin */
+        .admin-header {
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-header h1 { color: var(--primary); }
+        .admin-header .btn-logout {
+            padding: 0.5rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 { margin-bottom: 1.5rem; color: var(--primary); }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal .close {
+            float: right;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 1.5rem;
+        }
+        .modal .close:hover { color: var(--text); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .navbar .nav-links { display: none; }
+            .services-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="logo">ServiceHub</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">My Orders</a>
+            <a href="admin.html">Admin</a>
+        </div>
+        <div class="nav-actions">
+            <a href="login.html" id="login-link">Login</a>
+            <a href="register.html" id="register-link">Register</a>
+            <a href="#" id="logout-btn" style="display:none;">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <section class="hero" id="home">
+        <div>
+            <span class="badge">Browse Services</span>
+            <h1>Find the best services for you</h1>
+            <p>Browse from our wide range of professional services.</p>
+        </div>
+    </section>
+
+    <section class="services-grid" id="services-grid">
+        <!-- Services will be loaded here -->
+    </section>
+
+    <!-- Login Page -->
+    <div class="auth-container" id="auth-container" style="display:none;">
+        <div class="auth-card">
+            <h1>Login</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" />
+                </div>
+                <button type="submit" class="btn-submit">Login</button>
+            </form>
+            <div class="auth-link">
+                Don't have an account? <a href="register.html">Register</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div class="auth-container" id="register-container" style="display:none;">
+        <div class="auth-card">
+            <h1>Register</h1>
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="reg-name" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" />
+                </div>
+                <button type="submit" class="btn-submit">Register</button>
+            </form>
+            <div class="auth-link">
+                Already have an account? <a href="login.html">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div class="dashboard" id="dashboard" style="display:none;">
+        <h1>My Orders</h1>
+        <div class="orders-list" id="orders-list">
+            <!-- Orders will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div class="admin" id="admin" style="display:none;">
+        <div class="admin-header">
+            <h1>Admin Panel</h1>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+        <div class="dashboard" style="padding:0;">
+            <h1>All Orders</h1>
+            <div class="orders-list" id="admin-orders-list">
+                <!-- Orders will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div class="modal-overlay" id="purchase-modal">
+        <div class="modal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Complete Purchase</h2>
+            <form id="purchase-form">
+                <div class="form-group">
+                    <label>Service</label>
+                    <input type="text" id="purchase-service" readonly />
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" id="purchase-price" readonly />
+                </div>
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="card-number" placeholder="4242 4242 4242 4242" />
+                </div>
+                <div class="form-group">
+                    <label>Expiry (MM/YY)</label>
+                    <input type="text" id="card-expiry" placeholder="12/26" />
+                </div>
+                <div class="form-group">
+                    <label>CVC</label>
+                    <input type="text" id="card-cvc" placeholder="123" />
+                </div>
+                <button type="submit" class="btn-submit">Pay Now</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let currentUser = null;
+        let currentServiceId = null;
+
+        // ⚙️ API Configuration
+        // For local development (npm start): leave as '/api'
+        // For production (GitHub Pages frontend + Render backend):
+        //   set to 'https://your-backend-url.com/api'
+        const API_BASE_URL = '/api';
+
+        // Load user from storage
+        const token = localStorage.getItem('token');
+        if (token) {
+            fetch(`${API_BASE_URL}/me`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(r => r.json())
+            .then(user => {
+                currentUser = user;
+                document.getElementById('login-link').style.display = 'none';
+                document.getElementById('register-link').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'inline';
+            });
+        }
+
+        // Notification functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Load services
+        async function loadServices() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/services`);
+                const services = await res.json();
+                const grid = document.getElementById('services-grid');
+                grid.innerHTML = services.map(s => `
+                    <div class="service-card">
+                        <h3>${s.title}</h3>
+                        <p style="color: var(--text-light); font-size: 0.9rem;">${s.description || ''}</p>
+                        <p class="price">$${s.price}</p>
+                        <button class="btn-purchase" onclick="showPurchaseModal(${s.id})">Purchase</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load services', 'error');
+            }
+        }
+
+        // Purchase modal
+        window.showPurchaseModal = function(id) {
+            currentServiceId = id;
+            fetch(`${API_BASE_URL}/services/${id}`)
+                .then(r => r.json())
+                .then(s => {
+                    document.getElementById('purchase-service').value = s.title;
+                    document.getElementById('purchase-price').value = s.price;
+                    document.getElementById('purchase-modal').classList.add('active');
+                });
+        }
+
+        window.closeModal = function() {
+            document.getElementById('purchase-modal').classList.remove('active');
+        }
+
+        // Purchase form
+        document.getElementById('purchase-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+            const expiry = document.getElementById('card-expiry').value;
+            const cvc = document.getElementById('card-cvc').value;
+
+            // Validate card
+            if (!cardNumber || !expiry || !cvc) {
+                showToast('Please fill all card fields', 'error');
+                return;
+            }
+
+            // Stripe test card: 4242 4242 4242 4242 works in test mode
+            if (!cardNumber.startsWith('4242')) {
+                showToast('Please use a test card (starting with 4242)', 'error');
+                return;
+            }
+
+            try {
+                showToast('Processing payment...', 'success');
+                const res = await fetch(`${API_BASE_URL}/payments/create-intent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    body: JSON.stringify({ service_id: currentServiceId, amount: document.getElementById('purchase-price').value })
+                });
+                const data = await res.json();
+
+                // In a real Stripe integration, use Stripe.js to confirm card
+                // Here we simulate payment success
+                const paymentSuccess = await confirmPayment(data);
+
+                if (paymentSuccess) {
+                    closeModal();
+                    showToast('Payment successful! Thank you for your purchase.');
+                    loadOrders();
+                    loadServices();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Payment error: ' + err.message, 'error');
+            }
+        });
+
+        // Simulate payment confirmation (in production, use Stripe.js)
+        async function confirmPayment(paymentIntent) {
+            // In production, integrate Stripe.js:
+            // 1. Include Stripe.js from https://js.stripe.com/v3/
+            // 2. Create a card element
+            // 3. Confirm the payment with the client secret
+            // 4. Handle the result
+
+            // For demo, return true (payment is simulated)
+            return true;
+        }
+
+        // Load orders
+        async function loadOrders() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/orders`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const orders = await res.json();
+                const list = document.getElementById('orders-list');
+                if (orders.length === 0) {
+                    list.innerHTML = '<p>No orders yet.</p>';
+                    return;
+                }
+                list.innerHTML = orders.map(o => `
+                    <div class="order-item">
+                        <div class="order-info">
+                            <div class="title">${o.service_title}</div>
+                            <div class="meta">Purchased on: ${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="order-status ${o.status}">${o.status}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to load orders', 'error');
+            }
+        }
+
+        // Login
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('token', data.token);
+                    currentUser = data.user;
+                    showToast('Login successful!');
+                    window.location.href = 'index.html';
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (err) {
+                showToast('Server error', 'error');
+            }
+        });
+
+        // Register
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Registration successful! Please login.');
+                    window.location.href = 'login.html';
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showToast('Server error', 'error');
+            }
+        });
+
+        // Logout
+        window.logout = function() {
+            localStorage.removeItem('token');
+            currentUser = null;
+            window.location.href = 'index.html';
+        }
+
+        // Check URL for auth pages
+        const urlParams = new URLSearchParams(window.location.search);
+        const authPage = window.location.pathname.split('/').pop();
+        if (authPage === 'login.html' || authPage === 'register.html') {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('register-container').style.display = 'none';
+            if (authPage === 'register.html') {
+                document.getElementById('register-container').style.display = 'flex';
+                document.getElementById('auth-container').style.display = 'none';
+            }
+        } else if (authPage === 'dashboard.html') {
+            document.getElementById('dashboard').style.display = 'block';
+            loadOrders();
+        } else if (authPage === 'admin.html') {
+            document.getElementById('admin').style.display = 'block';
+            loadAdminOrders();
+        }
+
+        // Load services on page load
+        loadServices();
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "users": [
+    {
+      "id": "1794632814437",
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "$2a$10$D1h5RPOT.Gdq98dGEPswi.MRDEucqoISBUepps6epBN3If8We1XH2",
+      "created_at": "2026-11-14T05:06:54.437Z"
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "title": "Content Writing",
+      "description": "Professional content writing for blogs, articles, and websites",
+      "price": 150
+    },
+    {
+      "id": 2,
+      "title": "SEO Optimization",
+      "description": "Search engine optimization services to boost your website ranking",
+      "price": 250
+    },
+    {
+      "id": 3,
+      "title": "Graphic Design",
+      "description": "Professional graphic design services for logos, banners, and social media",
+      "price": 300
+    },
+    {
+      "id": 4,
+      "title": "Website Development",
+      "description": "Custom website development with modern technologies",
+      "price": 500
+    },
+    {
+      "id": 5,
+      "title": "Social Media Management",
+      "description": "Complete social media management and content scheduling",
+      "price": 200
+    },
+    {
+      "id": 6,
+      "title": "Video Editing",
+      "description": "Professional video editing for YouTube and social media content",
+      "price": 350
+    },
+    {
+      "id": 7,
+      "title": "Proofreading",
+      "description": "Professional proofreading and editing services for academic and business documents",
+      "price": 100
+    },
+    {
+      "id": 8,
+      "title": "Logo Design",
+      "description": "Unique logo design for your brand and business",
+      "price": 180
+    }
+  ],
+  "orders": []
+}
